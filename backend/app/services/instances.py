@@ -91,6 +91,7 @@ class InstanceService:
                     internal_port=challenge.internal_port,
                     memory_limit=challenge.runtime_memory_limit,
                     cpu_limit=challenge.runtime_cpu_limit,
+                    extra_env={"VARIANT_SEED": secrets.token_urlsafe(12)},
                 )
                 docker_manager.wait_healthy(host_port)
                 container_id = docker_container.container_id
@@ -241,6 +242,7 @@ class InstanceService:
                 internal_port=challenge.internal_port,
                 memory_limit=challenge.runtime_memory_limit,
                 cpu_limit=challenge.runtime_cpu_limit,
+                extra_env={"VARIANT_SEED": secrets.token_urlsafe(12)},
             )
             docker_manager.wait_healthy(instance.host_port)
         except Exception:

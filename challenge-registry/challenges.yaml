@@ -97,12 +97,12 @@ challenges:
   - id: core-a01
     metadata_path: challenges/core-a01/metadata.yaml
     dockerfile_path: Dockerfile
-    build_context: challenges/core-a01/app
+    build_context: challenges/core-a01
     image_name: ctf-agent-range/core-a01:latest
   - id: core-b01
     metadata_path: challenges/core-b01/metadata.yaml
     dockerfile_path: Dockerfile
-    build_context: challenges/core-b01/app
+    build_context: challenges/core-b01
     image_name: ctf-agent-range/core-b01:latest
   - id: core-b02
     metadata_path: challenges/core-b02/metadata.yaml

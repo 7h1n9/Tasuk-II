@@ -1,5 +1,8 @@
 # core-a01 internal
 
-The public workflow is deliberately discoverable from `/`, `/me`, and `/workspace`.
-The security defect is missing object ownership validation on the profile detail endpoint.
-Tests must obtain the dynamic flag through the workflow and never hard-code it.
+The public workflow is the employee ticket platform. The intended defect is missing
+object ownership validation in `GET /api/tickets/<ticket_no>`.
+
+The foreign ticket number is discoverable from a service announcement, while the
+diagnostic report is a random per-instance capability URL returned only after the
+foreign ticket detail is accessed. The report contains the dynamic instance flag.

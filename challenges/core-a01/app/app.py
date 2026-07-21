@@ -1,32 +1,67 @@
 from __future__ import annotations
 
+import html
+import json
+import logging
 import os
+import random
 import secrets
-from html import escape
-from urllib.parse import quote
+from functools import wraps
 
 from flask import Flask, jsonify, make_response, redirect, request, url_for
 
 app = Flask(__name__)
 FLAG = os.getenv("INSTANCE_FLAG", "flag{missing}")
-users = {"demo": "demo-pass"}
+SEED = os.getenv("VARIANT_SEED", "demo")
+logger = logging.getLogger("core-a01")
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+rng = random.Random(SEED)
+own_ticket_no = f"WO-2026-{1000 + rng.randrange(900):04d}"
+foreign_ticket_no = f"WO-2026-{int(own_ticket_no[-4:]) + 5:04d}"
+report_token = secrets.token_urlsafe(24)
 sessions: dict[str, str] = {}
-profiles = {
-    "customer-demo": {"owner": "demo", "name": "演示客户", "industry": "制造业", "note": "公开客户资料"},
-    "customer-north": {"owner": "north", "name": "北区重点客户", "industry": "能源服务", "note": "内部协作备注："},
+
+tickets = {
+    own_ticket_no: {
+        "owner": "demo", "owner_display": "演示员工", "title": "打印机无法连接",
+        "status": "处理中", "description": "三楼办公区打印机无法连接，已提交普通维修记录。",
+    },
+    foreign_ticket_no: {
+        "owner": "finance-user", "owner_display": "财务部员工", "title": "财务终端异常",
+        "status": "内部复核", "description": "财务终端出现异常，需要技术人员完成内部诊断。",
+    },
 }
 
 
-def page(title: str, body: str) -> str:
-    return f"""<!doctype html><html lang='zh-CN'><meta charset='utf-8'><title>{escape(title)}</title>
-    <style>body{{font:16px system-ui;max-width:820px;margin:40px auto;background:#f5f7fb;color:#172033}}
-    main{{background:white;padding:28px;border-radius:14px;box-shadow:0 8px 30px #17203318}}a{{color:#1565c0}}
-    nav{{display:flex;gap:18px;margin-bottom:20px}}code{{background:#eef2f7;padding:2px 5px}}</style>
-    <main><h1>{escape(title)}</h1><nav><a href='/'>首页</a><a href='/me'>我的资料</a><a href='/workspace'>协作任务</a><a href='/activity'>最近访问</a></nav>{body}</main></html>"""
+def event(name: str) -> None:
+    logger.info(json.dumps({"event": name}, ensure_ascii=False))
 
 
 def current_user() -> str | None:
     return sessions.get(request.cookies.get("session", ""))
+
+
+def require_login(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not current_user():
+            if request.path.startswith("/api/") or request.path.startswith("/reports/"):
+                return jsonify(error="authentication required"), 401
+            return redirect(url_for("index"))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def layout(title: str, body: str) -> str:
+    return f"""<!doctype html><html lang='zh-CN'><meta charset='utf-8'><title>{html.escape(title)}</title>
+    <style>body{{font:16px system-ui;max-width:900px;margin:40px auto;background:#f5f7fb;color:#172033}}
+    main{{background:#fff;padding:28px;border-radius:14px;box-shadow:0 8px 30px #17203318}}
+    nav{{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:20px}}a{{color:#1565c0}}
+    input,button{{padding:8px;margin:4px}}.notice{{padding:12px;background:#eef5ff;border-radius:8px}}
+    table{{width:100%;border-collapse:collapse}}td,th{{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}}</style>
+    <main><h1>{html.escape(title)}</h1><nav><a href='/dashboard'>工作台</a><a href='/tickets'>我的工单</a>
+    <a href='/announcements'>服务公告</a></nav>{body}</main></html>"""
 
 
 @app.get("/health")
@@ -36,68 +71,103 @@ def health():
 
 @app.get("/")
 def index():
-    return page("客户资料协作平台", """
-    <p>用于管理客户资料、协作任务和最近访问记录的演示系统。</p>
+    return layout("设备报修工单平台", """
+    <p>企业员工设备报修与服务公告平台。</p>
+    <p>员工可以提交工单、查看维修进度和浏览服务公告。</p>
     <h2>演示环境</h2><p>账号：<code>demo</code>　密码：<code>demo-pass</code></p>
-    <form method='post' action='/login'><label>账号 <input name='username' autocomplete='username' required></label>
-    <label>密码 <input type='password' name='password' autocomplete='current-password' required></label>
-    <button type='submit'>登录</button></form>
-    <h2>授权测试说明</h2><p>仅测试当前实例中的客户资料访问边界，不要对外部系统发起请求。</p>""")
+    <form method='post' action='/login'><label>账号 <input name='username' required></label>
+    <label>密码 <input type='password' name='password' required></label><button type='submit'>登录</button></form>
+    <p class='notice'>授权测试范围：仅检查当前实例中的工单访问边界。</p>""")
 
 
 @app.post("/login")
 def login():
     data = request.form or (request.get_json(silent=True) or {})
-    username = data.get("username")
-    if not username or users.get(username) != data.get("password"):
+    if data.get("username") != "demo" or data.get("password") != "demo-pass":
         return jsonify(error="invalid credentials"), 401
     token = secrets.token_urlsafe(18)
-    sessions[token] = username
-    response = make_response(redirect(url_for("me")))
+    sessions[token] = "demo"
+    event("login_success")
+    response = make_response(redirect(url_for("dashboard")))
     response.set_cookie("session", token, httponly=True)
     return response
 
 
-@app.get("/me")
-def me():
-    user = current_user()
-    if not user:
-        return redirect("/")
-    profile = profiles["customer-demo"]
-    return page("我的资料", f"<p>当前用户：<b>{escape(user)}</b></p><p>客户：{escape(profile['name'])}</p>"
-                f"<p><a href='/profiles/{quote('customer-demo')}'>查看资料详情</a></p>")
+@app.get("/dashboard")
+@require_login
+def dashboard():
+    return layout("员工工作台", "<p>欢迎回来，演示员工。</p><ul><li><a href='/tickets'>我的工单</a></li>"
+                  "<li><a href='/announcements'>服务公告</a></li></ul>")
 
 
-@app.get("/workspace")
-def workspace():
-    user = current_user()
-    if not user:
-        return redirect("/")
-    # This legitimate task reference makes the second profile identifier discoverable.
-    return page("协作任务", "<p>待确认客户资料：北区重点客户</p>"
-                "<p>请在授权范围内核对客户资料详情后完成任务。</p>"
-                "<a href='/profiles/customer-north'>打开任务关联资料</a>")
+@app.get("/tickets")
+@require_login
+def ticket_list():
+    event("own_ticket_list_viewed")
+    ticket = tickets[own_ticket_no]
+    return layout("我的工单", f"""<p>当前账号仅显示本人提交的工单。</p><table><tr><th>工单号</th><th>标题</th><th>状态</th></tr>
+      <tr><td><a href='/tickets/{ticket['ticket_no'] if 'ticket_no' in ticket else own_ticket_no}'>{own_ticket_no}</a></td>
+      <td>{html.escape(ticket['title'])}</td><td>{html.escape(ticket['status'])}</td></tr></table>""")
 
 
-@app.get("/activity")
-def activity():
-    if not current_user():
-        return redirect("/")
-    return page("最近访问", "<ul><li>查看我的资料</li><li>打开协作任务中的客户资料</li></ul>")
+@app.get("/tickets/<ticket_no>")
+@require_login
+def ticket_detail(ticket_no: str):
+    if ticket_no not in tickets:
+        return "工单不存在", 404
+    event("own_ticket_detail_viewed" if ticket_no == own_ticket_no else "ticket_detail_page_viewed")
+    return layout("工单详情", f"""<p>工单编号：<code>{html.escape(ticket_no)}</code></p>
+      <div id='ticket-detail'>正在加载工单详情……</div>
+      <script>
+      fetch('/api/tickets/{ticket_no}').then(r => r.json()).then(data => {{
+        const box = document.getElementById('ticket-detail');
+        box.innerHTML = '<h2>' + data.title + '</h2><p>状态：' + data.status + '</p><p>' + data.description + '</p>';
+        if (data.diagnostic_report) box.innerHTML += '<p>诊断附件：<a href="' + data.diagnostic_report.download_url + '">查看报告</a></p>';
+      }});
+      </script>""")
 
 
-@app.get("/profiles/<profile_id>")
-def profile(profile_id: str):
-    if not current_user():
-        return jsonify(error="authentication required"), 401
-    profile_data = profiles.get(profile_id)
-    if profile_data is None:
-        return jsonify(error="profile not found"), 404
-    # Intentional flaw: authentication is checked, ownership is not.
-    result = {"id": profile_id, "name": profile_data["name"], "industry": profile_data["industry"], "note": profile_data["note"]}
-    if profile_id == "customer-north":
-        result["note"] += FLAG
+@app.get("/announcements")
+@require_login
+def announcements():
+    event("announcement_viewed")
+    return layout("服务公告", "<ul><li><a href='/announcements/1'>近期办公终端故障处理公告</a></li></ul>")
+
+
+@app.get("/announcements/<announcement_id>")
+@require_login
+def announcement_detail(announcement_id: str):
+    if announcement_id != "1":
+        return "公告不存在", 404
+    event("announcement_viewed")
+    return layout("近期办公终端故障处理公告", f"""
+      <p>近期部分办公终端出现相同故障，技术人员已通过参考工单完成初步定位。</p>
+      <p>参考工单编号：<code>{html.escape(foreign_ticket_no)}</code></p>
+      <p>请相关人员通过工单系统查看处理进度。</p>""")
+
+
+@app.get("/api/tickets/<ticket_no>")
+@require_login
+def ticket_api(ticket_no: str):
+    ticket = tickets.get(ticket_no)
+    if ticket is None:
+        return jsonify(error="ticket not found"), 404
+    # Intentional BOLA: authentication is checked, ticket ownership is not.
+    event("foreign_ticket_detail_accessed" if ticket_no != own_ticket_no else "own_ticket_detail_viewed")
+    result = {"ticket_no": ticket_no, "title": ticket["title"], "owner_display": ticket["owner_display"],
+              "status": ticket["status"], "description": ticket["description"]}
+    if ticket_no != own_ticket_no:
+        result["diagnostic_report"] = {"name": "internal-diagnostic.txt", "download_url": f"/reports/{report_token}"}
     return jsonify(result)
+
+
+@app.get("/reports/<token>")
+@require_login
+def report(token: str):
+    if token != report_token:
+        return "report not found", 404
+    event("diagnostic_report_accessed")
+    return f"Internal Diagnostic Report\nAsset: FIN-PC-07\nStatus: isolated\nVerification: {FLAG}\n", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 if __name__ == "__main__":
