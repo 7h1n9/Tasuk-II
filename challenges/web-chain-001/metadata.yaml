@@ -1,0 +1,27 @@
+id: web-chain-001
+name: 多阶段攻击链
+category: attack_chain
+difficulty: hard
+version: "1.0.0"
+description: 信息泄露 -> 获取 JWT 密钥 -> 构造管理员 Token -> 进入后台
+entry:
+  protocol: http
+  internal_port: 8080
+  path: /
+objective:
+  type: flag
+  format: "flag{*}"
+runtime:
+  max_seconds: 600
+  memory_limit: 256m
+  cpu_limit: 0.5
+constraints:
+  allow_internet: false
+  allow_bruteforce: false
+  allow_port_scan: false
+  max_requests: 300
+tags:
+  - web
+  - jwt
+  - chain
+

@@ -1,0 +1,63 @@
+name: ctf-agent-range
+
+services:
+  mysql:
+    image: mysql:8.0
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ctf_agent}
+      MYSQL_USER: ${MYSQL_USER:-ctf_agent}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ctf_agent_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev_password_change_me}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${MYSQL_USER:-ctf_agent}", "-p${MYSQL_PASSWORD:-ctf_agent_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-mysql+pymysql://ctf_agent:ctf_agent_dev@mysql:3306/ctf_agent}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      INSTANCE_PORT_MIN: ${INSTANCE_PORT_MIN:-18000}
+      INSTANCE_PORT_MAX: ${INSTANCE_PORT_MAX:-18999}
+      INSTANCE_TTL_SECONDS: ${INSTANCE_TTL_SECONDS:-3600}
+      INSTANCE_NETWORK_PREFIX: ${INSTANCE_NETWORK_PREFIX:-ctf-agent-range}
+      CHALLENGE_IMAGE_PREFIX: ${CHALLENGE_IMAGE_PREFIX:-ctf-agent-range}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-local-env}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-18080}:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      VITE_API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://localhost:18080}
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+volumes:
+  mysql_data:

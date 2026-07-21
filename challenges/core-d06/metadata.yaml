@@ -1,0 +1,8 @@
+id: core-a04
+name: Account Recovery Center
+difficulty: advanced
+description: Authorized account recovery workflow validation.
+internal_port: 5000
+runtime_max_seconds: 900
+variant_levels: [0, 1, 2]
+dataset: development

@@ -1,0 +1,27 @@
+id: web-traversal-001
+name: 路径穿越与任意文件读取
+category: file_read
+difficulty: medium
+version: "1.0.0"
+description: 文件查看接口存在路径穿越，Flag 存放于容器内指定文件
+entry:
+  protocol: http
+  internal_port: 8080
+  path: /
+objective:
+  type: flag
+  format: "flag{*}"
+runtime:
+  max_seconds: 600
+  memory_limit: 256m
+  cpu_limit: 0.5
+constraints:
+  allow_internet: false
+  allow_bruteforce: false
+  allow_port_scan: false
+  max_requests: 300
+tags:
+  - web
+  - traversal
+  - file-read
+

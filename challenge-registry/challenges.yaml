@@ -1,0 +1,146 @@
+challenges:
+  - id: web-info-001
+    metadata_path: challenges/web-info-001/metadata.yaml
+    dockerfile_path: challenges/web-info-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-info-001:latest
+  - id: web-auth-001
+    metadata_path: challenges/web-auth-001/metadata.yaml
+    dockerfile_path: challenges/web-auth-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-auth-001:latest
+  - id: web-sqli-001
+    metadata_path: challenges/web-sqli-001/metadata.yaml
+    dockerfile_path: challenges/web-sqli-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-sqli-001:latest
+  - id: web-sqli-002
+    metadata_path: challenges/web-sqli-002/metadata.yaml
+    dockerfile_path: challenges/web-sqli-002/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-sqli-002:latest
+  - id: web-traversal-001
+    metadata_path: challenges/web-traversal-001/metadata.yaml
+    dockerfile_path: challenges/web-traversal-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-traversal-001:latest
+  - id: web-upload-001
+    metadata_path: challenges/web-upload-001/metadata.yaml
+    dockerfile_path: challenges/web-upload-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-upload-001:latest
+  - id: web-injection-001
+    metadata_path: challenges/web-injection-001/metadata.yaml
+    dockerfile_path: challenges/web-injection-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-injection-001:latest
+  - id: web-chain-001
+    metadata_path: challenges/web-chain-001/metadata.yaml
+    dockerfile_path: challenges/web-chain-001/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/web-chain-001:latest
+  - id: core-a04
+    metadata_path: challenges/core-a04/metadata.yaml
+    dockerfile_path: challenges/core-a04/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-a04:latest
+  - id: core-c04
+    metadata_path: challenges/core-c04/metadata.yaml
+    dockerfile_path: challenges/core-c04/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-c04:latest
+  - id: core-b04
+    metadata_path: challenges/core-b04/metadata.yaml
+    dockerfile_path: challenges/core-b04/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-b04:latest
+  - id: core-c05
+    metadata_path: challenges/core-c05/metadata.yaml
+    dockerfile_path: challenges/core-c05/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-c05:latest
+  - id: core-d02
+    metadata_path: challenges/core-d02/metadata.yaml
+    dockerfile_path: challenges/core-d02/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d02:latest
+  - id: core-a05
+    metadata_path: challenges/core-a05/metadata.yaml
+    dockerfile_path: challenges/core-a05/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-a05:latest
+  - id: core-b05
+    metadata_path: challenges/core-b05/metadata.yaml
+    dockerfile_path: challenges/core-b05/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-b05:latest
+  - id: core-c02
+    metadata_path: challenges/core-c02/metadata.yaml
+    dockerfile_path: challenges/core-c02/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-c02:latest
+  - id: core-d03
+    metadata_path: challenges/core-d03/metadata.yaml
+    dockerfile_path: challenges/core-d03/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d03:latest
+  - id: core-d05
+    metadata_path: challenges/core-d05/metadata.yaml
+    dockerfile_path: challenges/core-d05/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d05:latest
+  - id: core-d06
+    metadata_path: challenges/core-d06/metadata.yaml
+    dockerfile_path: challenges/core-d06/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d06:latest
+  - id: core-a01
+    metadata_path: challenges/core-a01/metadata.yaml
+    dockerfile_path: challenges/core-a01/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-a01:latest
+  - id: core-b01
+    metadata_path: challenges/core-b01/metadata.yaml
+    dockerfile_path: challenges/core-b01/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-b01:latest
+  - id: core-b02
+    metadata_path: challenges/core-b02/metadata.yaml
+    dockerfile_path: challenges/core-b02/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-b02:latest
+  - id: core-c01
+    metadata_path: challenges/core-c01/metadata.yaml
+    dockerfile_path: challenges/core-c01/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-c01:latest
+  - id: core-d01
+    metadata_path: challenges/core-d01/metadata.yaml
+    dockerfile_path: challenges/core-d01/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d01:latest
+  - id: core-a02
+    metadata_path: challenges/core-a02/metadata.yaml
+    dockerfile_path: challenges/core-a02/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-a02:latest
+  - id: core-a03
+    metadata_path: challenges/core-a03/metadata.yaml
+    dockerfile_path: challenges/core-a03/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-a03:latest
+  - id: core-b03
+    metadata_path: challenges/core-b03/metadata.yaml
+    dockerfile_path: challenges/core-b03/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-b03:latest
+  - id: core-c03
+    metadata_path: challenges/core-c03/metadata.yaml
+    dockerfile_path: challenges/core-c03/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-c03:latest
+  - id: core-d04
+    metadata_path: challenges/core-d04/metadata.yaml
+    dockerfile_path: challenges/core-d04/Dockerfile
+    build_context: .
+    image_name: ctf-agent-range/core-d04:latest

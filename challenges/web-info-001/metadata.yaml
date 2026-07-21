@@ -1,0 +1,27 @@
+id: web-info-001
+name: 敏感信息与备份文件泄露
+category: information_disclosure
+difficulty: easy
+version: "1.0.0"
+description: robots.txt 与备份目录泄露管理路径并导向动态 Flag
+entry:
+  protocol: http
+  internal_port: 8080
+  path: /
+objective:
+  type: flag
+  format: "flag{*}"
+runtime:
+  max_seconds: 600
+  memory_limit: 256m
+  cpu_limit: 0.5
+constraints:
+  allow_internet: false
+  allow_bruteforce: false
+  allow_port_scan: false
+  max_requests: 300
+tags:
+  - web
+  - infoleak
+  - robots
+

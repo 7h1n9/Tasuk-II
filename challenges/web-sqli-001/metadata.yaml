@@ -1,0 +1,27 @@
+id: web-sqli-001
+name: GET 参数 SQL 注入
+category: sql_injection
+difficulty: easy
+version: "1.0.0"
+description: 使用 GET 参数拼接 SQL 查询，允许通过 UNION 读取动态 Flag
+entry:
+  protocol: http
+  internal_port: 8080
+  path: /
+objective:
+  type: flag
+  format: "flag{*}"
+runtime:
+  max_seconds: 600
+  memory_limit: 256m
+  cpu_limit: 0.5
+constraints:
+  allow_internet: false
+  allow_bruteforce: false
+  allow_port_scan: false
+  max_requests: 300
+tags:
+  - web
+  - mysql
+  - sqli
+

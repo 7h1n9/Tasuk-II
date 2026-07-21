@@ -1,0 +1,27 @@
+id: web-sqli-002
+name: JSON 请求 SQL 注入
+category: sql_injection
+difficulty: medium
+version: "1.0.0"
+description: POST JSON 参数拼接 SQL 并以 JSON 返回结果
+entry:
+  protocol: http
+  internal_port: 8080
+  path: /
+objective:
+  type: flag
+  format: "flag{*}"
+runtime:
+  max_seconds: 600
+  memory_limit: 256m
+  cpu_limit: 0.5
+constraints:
+  allow_internet: false
+  allow_bruteforce: false
+  allow_port_scan: false
+  max_requests: 300
+tags:
+  - web
+  - json
+  - sqli
+
