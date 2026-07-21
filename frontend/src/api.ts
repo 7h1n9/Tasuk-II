@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { Envelope } from './types'
-import type { ChallengeDetail, ChallengeSummary, InstanceInfo, RunInfo, StatsInfo } from './types'
+import type { ChallengeDetail, ChallengeSummary, HintResponse, InstanceInfo, RunInfo, StatsInfo } from './types'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:18080'
 
@@ -24,6 +24,8 @@ export const api = {
   },
   getChallenge: (challengeId: string): Promise<ChallengeDetail> =>
     unwrap<ChallengeDetail>(client.get(`/api/v1/challenges/${challengeId}`)),
+  getHint: (challengeId: string, level: number): Promise<HintResponse> =>
+    unwrap<HintResponse>(client.get(`/api/v1/challenges/${challengeId}/hints`, { params: { level } })),
   createInstance: (challengeId: string): Promise<InstanceInfo> =>
     unwrap<InstanceInfo>(client.post('/api/v1/instances', { challenge_id: challengeId })),
   listInstances: async (): Promise<InstanceInfo[]> => {

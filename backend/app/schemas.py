@@ -28,6 +28,8 @@ class ChallengeSummary(BaseModel):
     current_instances: int
     entry: dict[str, Any]
     tags: list[str]
+    starting_point: str = ""
+    legacy: bool = False
 
 
 class ChallengeDetail(ChallengeSummary):
@@ -129,4 +131,3 @@ class StatsSummary(BaseModel):
     average_duration_ms: float
     average_tool_calls: float
     challenge_success: list[dict[str, Any]]
-

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from typing import Any
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +41,16 @@ def build_router() -> APIRouter:
     @router.get("/challenges")
     def list_challenges(db: Session = Depends(get_db)) -> dict[str, Any]:
         return envelope({"items": challenge_service.list_challenges(db)})
+
+    @router.get("/challenges/{challenge_id}/hints")
+    def get_hint_levels(challenge_id: str, level: int | None = None, db: Session = Depends(get_db)) -> dict[str, Any]:
+        try:
+            result = challenge_service.get_hints(db, challenge_id, level)
+            return envelope(result)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="challenge not found")
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
 
     @router.get("/challenges/{challenge_id}")
     def get_challenge(challenge_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
@@ -113,6 +125,31 @@ def build_router() -> APIRouter:
             return envelope(run_service.add_event(db, run_id, payload.event_type, payload.message, payload.payload), "created")
         except KeyError:
             raise HTTPException(status_code=404, detail="run not found")
+
+    @router.post("/runs/{run_id}/hints/{level}")
+    def request_hint(run_id: str, level: int, db: Session = Depends(get_db)) -> dict[str, Any]:
+        try:
+            run_record = db.get(AgentRun, run_id)
+            if run_record is None:
+                raise KeyError(run_id)
+            used_levels = {
+                int(json.loads(event.payload_json).get("level"))
+                for event in db.scalars(select(RunEvent).where(RunEvent.run_id == run_id, RunEvent.event_type == "hint_used")).all()
+            }
+            if level > 1 and any(previous not in used_levels for previous in range(1, level)):
+                raise HTTPException(status_code=409, detail="request previous hint levels first")
+            run = run_service.get_run(db, run_id)
+            hint = challenge_service.get_hints(db, run["challenge_id"], level)
+            db.add(HintUsage(id=f"hint-{uuid4()}", challenge_id=run["challenge_id"], run_id=run_id, hint_level=level, penalty_score=hint["penalty"]))
+            event = run_service.add_event(
+                db, run_id, "hint_used", f"hint level {level} requested",
+                {"level": level, "penalty": hint["penalty"]},
+            )
+            return envelope({**hint, "event_id": event["event_id"]}, "hint returned")
+        except KeyError:
+            raise HTTPException(status_code=404, detail="run or challenge not found")
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
 
     @router.post("/runs/{run_id}/tool-calls")
     def create_tool_call(run_id: str, payload: dict[str, Any], db: Session = Depends(get_db)) -> dict[str, Any]:

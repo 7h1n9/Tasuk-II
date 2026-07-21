@@ -4,6 +4,7 @@ import hashlib
 import random
 import secrets
 import socket
+from pathlib import Path
 from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import Any
@@ -68,7 +69,7 @@ class InstanceService:
         docker_manager.build_if_needed(
             image_name=challenge.image_name,
             dockerfile=challenge.dockerfile_path,
-            path=str(self.settings.project_root),
+            path=str((self.settings.project_root / challenge.build_context).resolve()),
         )
 
         container_id = None
@@ -225,7 +226,7 @@ class InstanceService:
         docker_manager.build_if_needed(
             image_name=challenge.image_name,
             dockerfile=challenge.dockerfile_path,
-            path=str(self.settings.project_root),
+            path=str((self.settings.project_root / challenge.build_context).resolve()),
         )
         new_network_name = f"{self.settings.instance_network_prefix}-{instance.id}-{instance.host_port}"
         docker_container = None

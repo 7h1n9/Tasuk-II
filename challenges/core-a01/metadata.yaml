@@ -1,8 +1,35 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-a01
+version: "2.0.0"
+public:
+  name: 客户资料协作平台
+  category: access-control
+  difficulty: easy
+  description: >
+    企业客户资料协作平台。请以演示账号登录，从“我的资料”和“协作任务”开始，
+    检查不同客户资料之间的访问边界。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 登录演示账号后，从首页的“我的资料”和“协作任务”开始观察业务流程。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  constraints:
+    max_requests: 100
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags: [web, access-control, idor]
+  hints:
+    - level: 1
+      text: 比较“我的资料”和协作任务中出现的客户资料标识。
+      penalty: 3
+    - level: 2
+      text: 资料详情由前端通过独立请求加载，观察详情请求中的对象关系。
+      penalty: 8
+    - level: 3
+      text: 确认详情接口是否同时验证登录状态和资料归属。
+      penalty: 15
+internal:
+  vulnerability_class: broken_object_level_authorization
+  required_stages: [authenticate, discover_profile_request, compare_ownership, confirm_authorization_failure, extract_flag]
+  solver: tests/solve.py
+  evidence_profile: access_control_v2

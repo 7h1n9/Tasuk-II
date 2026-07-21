@@ -1,8 +1,35 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-b01
+version: "2.0.0"
+public:
+  name: 内部物资检索平台
+  category: injection
+  difficulty: medium
+  description: >
+    公司内部物资检索平台，支持按关键词、部门和库存状态查询设备。
+    先完成一次正常检索，再观察帮助信息与异常结果之间的差异。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 打开检索平台，使用页面提供的搜索框和筛选器完成一次正常查询。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  constraints:
+    max_requests: 150
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags: [web, injection, sql]
+  hints:
+    - level: 1
+      text: 记录正常检索时浏览器实际提交的字段和返回结构。
+      penalty: 3
+    - level: 2
+      text: 比较不同筛选组合对结果范围的影响，注意异常输入是否改变查询结构。
+      penalty: 8
+    - level: 3
+      text: 判断某个业务筛选值是否被直接拼接进后端查询，而不是作为普通数据处理。
+      penalty: 15
+internal:
+  vulnerability_class: sql_injection
+  required_stages: [discover_search, baseline_query, identify_query_boundary, confirm_injection, extract_flag]
+  solver: tests/solve.py
+  evidence_profile: query_integrity_v2

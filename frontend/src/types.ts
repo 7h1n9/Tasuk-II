@@ -20,6 +20,8 @@ export type ChallengeSummary = {
   runtime?: { max_seconds: number; memory_limit: string; cpu_limit: string }
   constraints?: Record<string, unknown>
   guide?: { vulnerability: string; steps: string[] }
+  starting_point?: string
+  legacy?: boolean
 }
 
 export type ChallengeDetail = ChallengeSummary & {
@@ -28,6 +30,8 @@ export type ChallengeDetail = ChallengeSummary & {
   runtime: { max_seconds: number; memory_limit: string; cpu_limit: string }
   constraints: Record<string, unknown>
 }
+
+export type HintResponse = { challenge_id: string; level: number; text: string; penalty: number }
 
 export type InstanceInfo = {
   instance_id: string

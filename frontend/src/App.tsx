@@ -178,6 +178,8 @@ function ChallengeDetailPage() {
   const { challengeId } = useParams()
   const [item, setItem] = useState<ChallengeDetail | null>(null)
   const [busy, setBusy] = useState(false)
+  const [hintLevel, setHintLevel] = useState(0)
+  const [hintText, setHintText] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -200,6 +202,17 @@ function ChallengeDetailPage() {
               <h4>解题线索：{item.guide.vulnerability}</h4>
               <ol>{item.guide.steps.map((step) => <li key={step}>{step}</li>)}</ol>
             </div>}
+            <div className="starting-point-box">
+              <h4>建议起点</h4>
+              <p>{item.starting_point}</p>
+              {!item.legacy && <button className="btn-ghost" onClick={async () => {
+                const next = Math.min(hintLevel + 1, 3)
+                const hint = await api.getHint(item.id, next)
+                setHintLevel(next)
+                setHintText(`H${next}：${hint.text}（扣分 ${hint.penalty}）`)
+              }}>获取 H{Math.min(hintLevel + 1, 3)} 提示</button>}
+              {hintText && <p className="hint-result">{hintText}</p>}
+            </div>
             <div className="detail-table">
               <div>编号</div>
               <div>{item.id}</div>

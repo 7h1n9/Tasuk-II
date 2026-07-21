@@ -55,9 +55,10 @@ class DockerManager:
             return
 
     def build_if_needed(self, image_name: str, dockerfile: str, path: str) -> None:
-        # Challenge source changes should be reflected in new instances and resets,
-        # so always rebuild instead of trusting a stale local image cache.
-        self.build_image(image_name=image_name, dockerfile=dockerfile, path=path)
+        # Images are built explicitly during deployment. Rebuilding for every
+        # instance can restore stale BuildKit layers over a freshly fixed image.
+        if not self.image_exists(image_name):
+            self.build_image(image_name=image_name, dockerfile=dockerfile, path=path)
 
     def run_container(
         self,
