@@ -1,8 +1,54 @@
 id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+version: "2.0.0"
+
+public:
+  name: 企业邮件模板预览系统
+  category: web
+  difficulty: medium
+  description: >
+    企业邮件系统支持创建通知模板、选择模板并预览渲染结果。
+    请先理解正常模板变量和预览错误，再检查服务器端上下文边界。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用 employee 演示账号进入模板中心，先创建或预览一份正常通知模板。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 120
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - template-preview
+  hints:
+    - level: 1
+      text: 先进入模板中心，创建一份使用变量说明页中字段的正常通知模板。
+      penalty: 3
+    - level: 2
+      text: 比较正常预览和变量错误响应，关注渲染器实际接收的上下文根对象。
+      penalty: 8
+    - level: 3
+      text: 验证预览渲染是否意外暴露了应用配置对象，并检查其中的通知配置字段。
+      penalty: 15
+
+internal:
+  vulnerability_class: template_context_disclosure
+  required_stages:
+    - authenticate
+    - view_template_center
+    - view_variable_help
+    - create_normal_template
+    - preview_normal_template
+    - trigger_template_error
+    - discover_context_root
+    - read_configuration_field
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: server_template_context_v1

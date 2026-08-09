@@ -1,8 +1,55 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-a05
+version: "2.0.0"
+
+public:
+  name: 企业合同审核平台
+  category: web
+  difficulty: medium
+  description: >
+    企业合同平台支持提交合同、跟踪审核生命周期和查看活动记录。
+    请从正常合同状态与跨部门审核通知中理解结果访问边界。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用 submitter 演示账号登录，先查看合同中心、流程说明和活动记录。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 120
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - contract-review
+  hints:
+    - level: 1
+      text: 先提交一份普通合同，观察合同详情页加载状态时发出的请求。
+      penalty: 3
+    - level: 2
+      text: 活动记录中有另一份已完成审核的合同，比较它与自己的合同状态和结果请求。
+      penalty: 8
+    - level: 3
+      text: 验证最终审核结果接口是否同时检查当前用户是审核人员，而不只是检查合同已经完成审核。
+      penalty: 15
+
+internal:
+  vulnerability_class: workflow_authorization_bypass
+  required_stages:
+    - authenticate_as_submitter
+    - submit_normal_contract
+    - view_contract_status
+    - observe_review_result_request
+    - view_activity_record
+    - discover_approved_contract_reference
+    - access_approved_review_result
+    - discover_final_attachment
+    - download_final_attachment
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: contract_workflow_authz_v1

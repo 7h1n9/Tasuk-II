@@ -1,8 +1,55 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-a03
+version: "2.0.0"
+
+public:
+  name: 企业内部项目审批门户
+  category: web
+  difficulty: medium
+  description: >
+    企业内部项目门户支持员工登录、项目查看、申请提交和审批状态查询。
+    请从正常工作空间和审批业务中理解门户的身份边界。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用 employee 演示账号登录，依次查看项目中心、审批中心和个人设置。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 120
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - project-approval
+  hints:
+    - level: 1
+      text: 先观察普通员工登录后的项目、审批和个人设置页面。
+      penalty: 3
+    - level: 2
+      text: 切换工作空间后，比较浏览器保存的状态与审批队列请求返回的角色信息。
+      penalty: 8
+    - level: 3
+      text: 验证敏感审批页面使用的角色依据是否来自可信的登录状态，而不是客户端可修改的门户上下文。
+      penalty: 15
+
+internal:
+  vulnerability_class: client_controlled_role_context
+  required_stages:
+    - authenticate_as_employee
+    - view_project_center
+    - view_approval_center
+    - inspect_normal_approval_request
+    - change_workspace
+    - decode_portal_context
+    - alter_role_context
+    - access_privileged_review_page
+    - download_internal_archive
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: portal_role_context_v1

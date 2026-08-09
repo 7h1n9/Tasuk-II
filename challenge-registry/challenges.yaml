@@ -41,8 +41,8 @@ challenges:
     image_name: ctf-agent-range/web-chain-001:latest
   - id: core-a04
     metadata_path: challenges/core-a04/metadata.yaml
-    dockerfile_path: challenges/core-a04/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-a04
     image_name: ctf-agent-range/core-a04:latest
   - id: core-c04
     metadata_path: challenges/core-c04/metadata.yaml
@@ -66,8 +66,8 @@ challenges:
     image_name: ctf-agent-range/core-d02:latest
   - id: core-a05
     metadata_path: challenges/core-a05/metadata.yaml
-    dockerfile_path: challenges/core-a05/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-a05
     image_name: ctf-agent-range/core-a05:latest
   - id: core-b05
     metadata_path: challenges/core-b05/metadata.yaml
@@ -121,13 +121,13 @@ challenges:
     image_name: ctf-agent-range/core-d01:latest
   - id: core-a02
     metadata_path: challenges/core-a02/metadata.yaml
-    dockerfile_path: challenges/core-a02/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-a02
     image_name: ctf-agent-range/core-a02:latest
   - id: core-a03
     metadata_path: challenges/core-a03/metadata.yaml
-    dockerfile_path: challenges/core-a03/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-a03
     image_name: ctf-agent-range/core-a03:latest
   - id: core-b03
     metadata_path: challenges/core-b03/metadata.yaml

@@ -1,8 +1,54 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-a02
+version: "2.0.0"
+
+public:
+  name: 企业采购订单查询系统
+  category: web
+  difficulty: medium
+  description: >
+    企业采购部门为员工提供订单查询、物流跟踪和验收附件下载服务。
+    请从正常采购业务和跨部门通知中理解订单访问边界。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用演示账号登录后，先查看“我的采购”，再浏览采购公告和查询说明。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 120
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - procurement
+  hints:
+    - level: 1
+      text: 先观察自己的采购订单如何从详情页面加载，再查看公告和查询说明中的业务编号。
+      penalty: 3
+    - level: 2
+      text: 比较订单列表与跨部门通知中的订单编号，关注详情页面发出的对象查询请求。
+      penalty: 8
+    - level: 3
+      text: 验证订单详情接口是否只确认登录状态，也确认目标订单确实属于当前员工。
+      penalty: 15
+
+internal:
+  vulnerability_class: broken_object_level_authorization
+  required_stages:
+    - authenticate
+    - view_own_order_list
+    - observe_order_detail_api
+    - view_cross_department_announcement
+    - discover_foreign_order_reference
+    - access_foreign_order
+    - discover_attachment_capability
+    - download_acceptance_report
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: procurement_order_bola_v1
