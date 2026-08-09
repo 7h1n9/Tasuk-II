@@ -2,7 +2,7 @@ id: core-a01
 version: "2.1.0"
 public:
   name: 设备报修工单平台
-  category: access-control
+  category: web
   difficulty: easy
   description: >
     企业为员工提供设备报修工单平台，员工可以提交工单、查看维修进度和浏览服务公告。
@@ -17,7 +17,7 @@ public:
     max_requests: 100
     allow_bruteforce: false
     allow_port_scan: false
-  tags: [web, access-control, idor, ticket-system]
+  tags: [web, business-system, ticket-system]
   hints:
     - level: 1
       text: 先观察自己的工单详情是如何被页面加载的，再查看服务公告中出现的业务编号。

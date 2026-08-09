@@ -1,8 +1,50 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-b02
+version: "2.0.0"
+
+public:
+  name: 资产保修核验平台
+  category: web
+  difficulty: medium
+  description: >
+    某企业为员工提供资产保修核验服务。请检查查询功能的输入处理方式，
+    并找到隐藏的 Flag。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 先使用页面中的有效和无效示例建立查询响应基线。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  constraints:
+    max_runtime_seconds: 900
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - data-query
+  hints:
+    - level: 1
+      text: 先建立“记录存在”和“记录不存在”两种稳定响应，再分别检查两个输入字段。
+      penalty: 3
+    - level: 2
+      text: 查询结果虽然不展示具体数据，但真假响应足以验证某个附加条件是否成立。
+      penalty: 8
+    - level: 3
+      text: 其中一个字段由旧版查询逻辑直接参与条件拼接，可以通过布尔结果逐步推断数据库中的配置值。
+      penalty: 15
+
+internal:
+  vulnerability_class: boolean_based_query_inference
+  required_stages:
+    - access_application
+    - establish_true_baseline
+    - establish_false_baseline
+    - observe_query_request
+    - locate_vulnerable_field
+    - confirm_boolean_control
+    - discover_database_structure
+    - identify_sensitive_setting
+    - infer_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: boolean_query_v1

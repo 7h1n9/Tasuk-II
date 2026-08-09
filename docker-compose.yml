@@ -40,7 +40,7 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "${BACKEND_PORT:-18080}:8000"
+      - "0.0.0.0:${BACKEND_PORT:-18080}:8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -57,7 +57,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "0.0.0.0:${FRONTEND_PORT:-3000}:3000"
 
 volumes:
   mysql_data:

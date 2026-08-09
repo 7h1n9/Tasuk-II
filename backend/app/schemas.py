@@ -43,6 +43,10 @@ class InstanceCreateRequest(BaseModel):
     challenge_id: str
 
 
+class InstanceResetRequest(BaseModel):
+    regenerate_variant: bool = False
+
+
 class InstanceResponse(BaseModel):
     instance_id: str
     challenge_id: str

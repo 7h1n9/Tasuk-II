@@ -53,6 +53,7 @@ class ChallengeInstance(Base):
     container_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     network_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     flag_hash: Mapped[str] = mapped_column(String(128), nullable=False)
+    variant_seed: Mapped[str] = mapped_column(String(128), nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)

@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     database_url: str = Field(default="mysql+pymysql://ctf_agent:ctf_agent_dev@mysql:3306/ctf_agent", alias="DATABASE_URL")
     instance_port_min: int = Field(default=18000, alias="INSTANCE_PORT_MIN")
     instance_port_max: int = Field(default=18999, alias="INSTANCE_PORT_MAX")
+    instance_public_host: str = Field(default="localhost", alias="INSTANCE_PUBLIC_HOST")
+    instance_public_port_offset: int = Field(default=0, alias="INSTANCE_PUBLIC_PORT_OFFSET")
     instance_ttl_seconds: int = Field(default=3600, alias="INSTANCE_TTL_SECONDS")
     instance_network_prefix: str = Field(default="ctf-agent-range", alias="INSTANCE_NETWORK_PREFIX")
     challenge_image_prefix: str = Field(default="ctf-agent-range", alias="CHALLENGE_IMAGE_PREFIX")

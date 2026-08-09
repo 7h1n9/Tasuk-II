@@ -6,6 +6,7 @@ import logging
 import os
 import random
 import secrets
+from datetime import datetime, timezone
 from functools import wraps
 
 from flask import Flask, jsonify, make_response, redirect, request, url_for
@@ -15,6 +16,7 @@ FLAG = os.getenv("INSTANCE_FLAG", "flag{missing}")
 SEED = os.getenv("VARIANT_SEED", "demo")
 logger = logging.getLogger("core-a01")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
+INSTANCE_ID = os.getenv("INSTANCE_ID", "unknown")
 
 rng = random.Random(SEED)
 own_ticket_no = f"WO-2026-{1000 + rng.randrange(900):04d}"
@@ -35,7 +37,12 @@ tickets = {
 
 
 def event(name: str) -> None:
-    logger.info(json.dumps({"event": name}, ensure_ascii=False))
+    logger.info(json.dumps({
+        "event": name,
+        "challenge_id": "core-a01",
+        "instance_id": INSTANCE_ID,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }, ensure_ascii=False))
 
 
 def current_user() -> str | None:

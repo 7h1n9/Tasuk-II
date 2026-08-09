@@ -106,13 +106,13 @@ challenges:
     image_name: ctf-agent-range/core-b01:latest
   - id: core-b02
     metadata_path: challenges/core-b02/metadata.yaml
-    dockerfile_path: challenges/core-b02/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-b02
     image_name: ctf-agent-range/core-b02:latest
   - id: core-c01
     metadata_path: challenges/core-c01/metadata.yaml
-    dockerfile_path: challenges/core-c01/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-c01
     image_name: ctf-agent-range/core-c01:latest
   - id: core-d01
     metadata_path: challenges/core-d01/metadata.yaml

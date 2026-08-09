@@ -90,7 +90,7 @@ class DockerManager:
             detach=True,
             environment=env,
             network=network_name,
-            ports={f"{internal_port}/tcp": host_port},
+            ports={f"{internal_port}/tcp": ("0.0.0.0", host_port)},
             mem_limit=memory_limit,
             cpu_period=100000,
             cpu_quota=cpu_quota,

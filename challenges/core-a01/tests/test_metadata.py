@@ -10,3 +10,4 @@ def test_metadata_identity_and_public_boundary():
     assert metadata["public"]["name"] == "设备报修工单平台"
     assert metadata["internal"]["vulnerability_class"] == "broken_object_level_authorization"
     assert "flag_value" not in metadata["public"]
+    assert "idor" not in metadata["public"].get("tags", [])

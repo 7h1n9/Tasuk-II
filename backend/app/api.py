@@ -10,12 +10,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from .database import Base, engine, get_db
+from .database import Base, engine, ensure_compatibility_schema, get_db
 from .models import *  # noqa: F401,F403
 from .schemas import (
     Envelope,
     ErrorEnvelope,
     InstanceCreateRequest,
+    InstanceResetRequest,
     InstanceResponse,
     InstanceSubmitRequest,
     InstanceSubmitResponse,
@@ -80,9 +81,10 @@ def build_router() -> APIRouter:
             raise HTTPException(status_code=404, detail="instance not found")
 
     @router.post("/instances/{instance_id}/reset")
-    def reset_instance(instance_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+    def reset_instance(instance_id: str, payload: InstanceResetRequest | None = None, db: Session = Depends(get_db)) -> dict[str, Any]:
         try:
-            return envelope(instance_service.reset_instance(db, instance_id), "reset")
+            regenerate_variant = payload.regenerate_variant if payload is not None else False
+            return envelope(instance_service.reset_instance(db, instance_id, regenerate_variant), "reset")
         except KeyError:
             raise HTTPException(status_code=404, detail="instance not found")
         except Exception as exc:  # noqa: BLE001
@@ -236,6 +238,7 @@ def build_app() -> FastAPI:
     @app.on_event("startup")
     def startup() -> None:
         Base.metadata.create_all(bind=engine)
+        ensure_compatibility_schema()
         from .services.challenges import challenge_service
 
         from .database import SessionLocal

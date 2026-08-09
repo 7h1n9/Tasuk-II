@@ -7,8 +7,7 @@ if (!(Test-Path ".env")) {
 }
 
 docker compose up -d mysql
-Write-Host "等待 MySQL 健康检查通过..."
+Write-Host "Waiting for MySQL health check..."
 Start-Sleep -Seconds 10
 docker compose build
-docker compose up -d backend frontend
-
+./scripts/start.ps1

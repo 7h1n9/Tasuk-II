@@ -31,6 +31,10 @@ class InstanceService:
     def _new_flag() -> str:
         return f"flag{{{secrets.token_hex(16)}}}"
 
+    @staticmethod
+    def _new_variant_seed() -> str:
+        return secrets.token_urlsafe(12)
+
     def _port_is_available(self, port: int) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -55,7 +59,8 @@ class InstanceService:
         return candidates
 
     def _instance_target_url(self, host_port: int) -> str:
-        return f"http://localhost:{host_port}"
+        public_port = host_port + self.settings.instance_public_port_offset
+        return f"http://{self.settings.instance_public_host}:{public_port}"
 
     def create_instance(self, db: Session, challenge_id: str) -> dict[str, Any]:
         challenge = db.get(Challenge, challenge_id)
@@ -64,6 +69,7 @@ class InstanceService:
 
         flag = self._new_flag()
         flag_hash = self._hash_flag(flag)
+        variant_seed = self._new_variant_seed()
         instance_id = f"instance-{uuid4()}"
         expires_at = datetime.utcnow() + timedelta(seconds=self.settings.instance_ttl_seconds)
         docker_manager.build_if_needed(
@@ -90,8 +96,8 @@ class InstanceService:
                     host_port=host_port,
                     internal_port=challenge.internal_port,
                     memory_limit=challenge.runtime_memory_limit,
-                    cpu_limit=challenge.runtime_cpu_limit,
-                    extra_env={"VARIANT_SEED": secrets.token_urlsafe(12)},
+                cpu_limit=challenge.runtime_cpu_limit,
+                    extra_env={"VARIANT_SEED": variant_seed, "INSTANCE_ID": instance_id},
                 )
                 docker_manager.wait_healthy(host_port)
                 container_id = docker_container.container_id
@@ -133,6 +139,7 @@ class InstanceService:
             container_id=container_id,
             network_name=network_name,
             flag_hash=flag_hash,
+            variant_seed=variant_seed,
             created_at=datetime.utcnow(),
             expires_at=expires_at,
             updated_at=datetime.utcnow(),
@@ -145,7 +152,7 @@ class InstanceService:
         return {
             "instance_id": instance.id,
             "challenge_id": instance.challenge_id,
-            "target_url": instance.target_url,
+            "target_url": self._instance_target_url(instance.host_port),
             "status": instance.status,
             "expires_at": instance.expires_at,
             "created_at": instance.created_at,
@@ -161,7 +168,7 @@ class InstanceService:
             "instance_id": instance.id,
             "challenge_id": instance.challenge_id,
             "challenge_name": challenge.name if challenge else instance.challenge_id,
-            "target_url": instance.target_url,
+            "target_url": self._instance_target_url(instance.host_port),
             "status": instance.status,
             "host_port": instance.host_port,
             "created_at": instance.created_at,
@@ -178,7 +185,7 @@ class InstanceService:
                 "instance_id": item.id,
                 "challenge_id": item.challenge_id,
                 "challenge_name": challenge_names.get(item.challenge_id, item.challenge_id),
-                "target_url": item.target_url,
+                "target_url": self._instance_target_url(item.host_port),
                 "status": item.status,
                 "host_port": item.host_port,
                 "created_at": item.created_at,
@@ -209,7 +216,7 @@ class InstanceService:
             "message": submission.message,
         }
 
-    def reset_instance(self, db: Session, instance_id: str) -> dict[str, Any]:
+    def reset_instance(self, db: Session, instance_id: str, regenerate_variant: bool = False) -> dict[str, Any]:
         instance = db.get(ChallengeInstance, instance_id)
         if instance is None:
             raise KeyError(instance_id)
@@ -224,6 +231,9 @@ class InstanceService:
             docker_manager.remove_network(old_network_name)
 
         new_flag = self._new_flag()
+        variant_seed = instance.variant_seed or self._new_variant_seed()
+        if regenerate_variant:
+            variant_seed = self._new_variant_seed()
         docker_manager.build_if_needed(
             image_name=challenge.image_name,
             dockerfile=challenge.dockerfile_path,
@@ -241,8 +251,8 @@ class InstanceService:
                 host_port=instance.host_port,
                 internal_port=challenge.internal_port,
                 memory_limit=challenge.runtime_memory_limit,
-                cpu_limit=challenge.runtime_cpu_limit,
-                extra_env={"VARIANT_SEED": secrets.token_urlsafe(12)},
+                    cpu_limit=challenge.runtime_cpu_limit,
+                extra_env={"VARIANT_SEED": variant_seed, "INSTANCE_ID": instance.id},
             )
             docker_manager.wait_healthy(instance.host_port)
         except Exception:
@@ -253,6 +263,7 @@ class InstanceService:
                 docker_manager.remove_network(new_network_name)
             raise
         instance.flag_hash = self._hash_flag(new_flag)
+        instance.variant_seed = variant_seed
         instance.status = "resetting"
         instance.last_error = None
         instance.updated_at = datetime.utcnow()
@@ -269,7 +280,7 @@ class InstanceService:
         return {
             "instance_id": instance.id,
             "challenge_id": instance.challenge_id,
-            "target_url": instance.target_url,
+            "target_url": self._instance_target_url(instance.host_port),
             "status": instance.status,
             "expires_at": instance.expires_at,
             "created_at": instance.created_at,
