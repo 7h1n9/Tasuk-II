@@ -1,8 +1,54 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-b05
+version: "2.0.0"
+
+public:
+  name: 员工资料文件管理中心
+  category: web
+  difficulty: medium
+  description: >
+    员工资料文件管理中心支持用户上传普通文件、查看审核状态、预览处理副本并下载自己的文件。
+  objective: 获取 flag{...} 格式的字符串。
+  starting_point: 使用 employee 演示账号登录，上传无害文本文件并观察文件处理流程。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 150
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - 业务系统
+    - 文件处理
+    - 访问控制
+  hints:
+    - level: 1
+      text: 先完成一次普通上传，观察处理详情如何标识预览地址。
+      penalty: 3
+    - level: 2
+      text: 对比处理响应中的文件所有者与审核动态中展示的文件编号。
+      penalty: 8
+    - level: 3
+      text: 预览流程应当和下载流程一样校验业务上的文件所有者。
+      penalty: 15
+
+internal:
+  vulnerability_class: file_preview_workflow_issue
+  required_stages:
+    - authenticate
+    - view_profile
+    - upload_normal_file
+    - inspect_file_list
+    - discover_review_queue_reference
+    - inspect_processing_details
+    - discover_preview_url
+    - preview_internal_review_file
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: preview_owner_isolation_v1

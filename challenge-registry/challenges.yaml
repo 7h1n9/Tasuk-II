@@ -51,8 +51,8 @@ challenges:
     image_name: ctf-agent-range/core-c04:latest
   - id: core-b04
     metadata_path: challenges/core-b04/metadata.yaml
-    dockerfile_path: challenges/core-b04/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-b04
     image_name: ctf-agent-range/core-b04:latest
   - id: core-c05
     metadata_path: challenges/core-c05/metadata.yaml
@@ -71,8 +71,8 @@ challenges:
     image_name: ctf-agent-range/core-a05:latest
   - id: core-b05
     metadata_path: challenges/core-b05/metadata.yaml
-    dockerfile_path: challenges/core-b05/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-b05
     image_name: ctf-agent-range/core-b05:latest
   - id: core-c02
     metadata_path: challenges/core-c02/metadata.yaml
@@ -131,8 +131,8 @@ challenges:
     image_name: ctf-agent-range/core-a03:latest
   - id: core-b03
     metadata_path: challenges/core-b03/metadata.yaml
-    dockerfile_path: challenges/core-b03/Dockerfile
-    build_context: .
+    dockerfile_path: Dockerfile
+    build_context: challenges/core-b03
     image_name: ctf-agent-range/core-b03:latest
   - id: core-c03
     metadata_path: challenges/core-c03/metadata.yaml

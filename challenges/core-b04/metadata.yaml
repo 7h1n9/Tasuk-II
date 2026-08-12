@@ -1,8 +1,55 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-b04
+version: "2.0.0"
+
+public:
+  name: 企业审计查询平台
+  category: web
+  difficulty: medium
+  description: >
+    企业安全审计系统支持查询操作日志、查看风险事件和导出审计报告。
+    请从日期、部门和事件编号等正常业务条件理解查询结果范围。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用 demo 演示账号登录，先进入审计查询页面建立个人记录基线。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 150
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - audit-api
+    - data-filtering
+  hints:
+    - level: 1
+      text: 先用默认日期和“我的部门”查询，记录返回的 actor、department 和 scope。
+      penalty: 3
+    - level: 2
+      text: 比较“我的部门”和“全部部门”是如何改变查询结果范围的，并关注结果中的事件编号。
+      penalty: 8
+    - level: 3
+      text: 验证全部部门查询是否仍然保留当前用户范围，再用异常事件编号生成审计报告。
+      penalty: 15
+
+internal:
+  vulnerability_class: broken_data_filtering
+  required_stages:
+    - authenticate
+    - view_audit_page
+    - establish_personal_query_baseline
+    - inspect_query_parameters
+    - compare_department_scopes
+    - discover_internal_audit_event
+    - export_sensitive_event
+    - download_audit_report
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: audit_scope_filter_v1

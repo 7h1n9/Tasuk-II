@@ -1,8 +1,56 @@
-id: core-a04
-name: Account Recovery Center
-difficulty: advanced
-description: Authorized account recovery workflow validation.
-internal_port: 5000
-runtime_max_seconds: 900
-variant_levels: [0, 1, 2]
-dataset: development
+id: core-b03
+version: "2.0.0"
+
+public:
+  name: 企业知识库文档平台
+  category: web
+  difficulty: medium
+  description: >
+    企业知识库支持员工登录、浏览文章、搜索资料、查看文档和下载附件。
+    请结合文档列表、搜索结果和文档状态理解知识内容的可见范围。
+  objective: 获取格式为 flag{...} 的字符串
+  starting_point: 使用 demo 演示账号登录，先浏览知识文档，再进入搜索页面查找业务主题。
+  entry:
+    protocol: http
+    internal_port: 5000
+    path: /
+  runtime:
+    max_seconds: 900
+    memory_limit: 256m
+    cpu_limit: 0.5
+  constraints:
+    max_requests: 150
+    allow_bruteforce: false
+    allow_port_scan: false
+  tags:
+    - web
+    - business-system
+    - knowledge-base
+    - information-disclosure
+  hints:
+    - level: 1
+      text: 先比较知识文档列表和搜索页面的正常结果，并观察文档状态字段。
+      penalty: 3
+    - level: 2
+      text: 使用业务主题搜索后，检查搜索结果中是否出现列表之外的文档编号和状态。
+      penalty: 8
+    - level: 3
+      text: 验证归档文档的详情和附件是否仍能通过历史索引被访问。
+      penalty: 15
+
+internal:
+  vulnerability_class: sensitive_information_disclosure
+  required_stages:
+    - authenticate
+    - view_document_list
+    - view_search_page
+    - search_normal_business_term
+    - compare_search_and_list_results
+    - discover_archived_document
+    - view_archived_document
+    - discover_sensitive_attachment
+    - download_audit_attachment
+    - extract_flag
+    - submit_flag
+  solver: tests/solve.py
+  evidence_profile: stale_document_index_v1
